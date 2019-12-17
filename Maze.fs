@@ -17,64 +17,57 @@ type CharInfo with
     static member internal path = pixel.filled Color.Black
     member this.isWall = this = pixel.wall
 
-let W = 30
-let H = 30
-
-type cell = { 
-    x0 : int  
-    y0 : int 
-    visited : bool 
-    char : CharInfo
-} 
+let W = 31
+let H = 31
 
 type direction = Up | Right | Down | Left
 
-
-type state = {
-    maze: sprite
-}
-
 // TODO: implement the maze type, its generation (task 1) and its automatic resolution (task 2)
-type maze (w, h) as this =    
-    inherit image (w ,h)
-
-    let i = new image (w, h) 
-
-    let changecell (d : direction) (c : cell) = 
-        match d with 
-        | Up-> {x0 = c.x0 ; y0 = (c.y0 - 2) ; visited = c.visited ; char = c.char}
-        | Right -> {x0 = (c.x0 + 2) ; y0 = c.y0 ; visited = c.visited ; char = c.char}
-        | Down -> {x0 = c.x0 ; y0 = (c.y0 + 2) ; visited = c.visited ; char = c.char}
-        | Left -> {x0 = (c.x0 - 2) ; y0 = c.y0 ; visited = c.visited ; char = c.char}
+type maze (w, h) as this =  
     
-    let is_visited c = c.visited
+    let mazestruc = Array2D.create w h false
+
+    let element (x, y) = Array2D.get mazestruc x y 
+
+    let removeWall (x1, y1) (x2, y2)=
+        let Xcellwall = (min x1 x2) + 1
+        let Ycellwall = (min y1 y2) + 1
+        mazestruc.[Xcellwall, Ycellwall] <- true
+
+    let rndDir l = 
+        let i = rnd_int 0 3
+        List.item i l
+
+    let isValidCell (x,y) = x>=1 && x<=(w-1) && y>=1 && y<=(h-1)
+
+    let generateMaze =
+        mazestruc.[1 , 1] <- true
+        let rec loop m =
+                let mutable X = 1
+                let mutable Y = 1
+                let dir = rndDir [Up ; Right ; Down ; Left]
+                match dir with 
+                |Up when isValidCell (X , Y - 2) -> mazestruc.[X , Y-2] <- true
+                                                    removeWall (X,Y) (X,Y-2)
+                |Right when isValidCell (X + 2 , Y) -> mazestruc.[X+2 , Y] <- true
+                                                       removeWall (X,Y) (X,Y-2)
+                |Down when isValidCell (X , Y + 2) -> mazestruc.[X , Y+2] <- true
+                                                      removeWall (X,Y) (X,Y-2)
+                |Left when isValidCell (X - 2 , Y) -> mazestruc.[X-2 , Y] <- true
+                                                      removeWall (X,Y) (X,Y-2)
+                |_ -> if isValidCell (X , Y - 2) || isValidCell (X + 2 , Y) || isValidCell (X , Y + 2) || isValidCell (X - 2 , Y) then loop m
+                      else
     
-    let remove_wall d c = 
-        let newcell = changecell d c 
-        {x0 = newcell.x0 ; y0 = newcell.y0 ; visited = newcell.visited ; char = CharInfo.path}
 
     // TODO: do not forget to call the generation function in your object initializer
     do this.generate
 
     // TODO: start with implementing the generation
-    member private __.generate =
-        i.draw_rectangle (0, 0, w, h, CharInfo.wall)
+    member private __.generate = ()
+        
 
-let main () =
-    let engine = new engine (W, H)
-
-    let maze1 = new maze (W, H)
-
-    let spr1 = engine.create_and_register_sprite (maze1,0 ,0, 1)
-
-    let update (key : ConsoleKeyInfo) (screen : wronly_raster) (st : state) =
-        st, key.KeyChar = 'q'
-
-    let st0 = {
-        maze = spr1  
-        }
-
-    engine.loop_on_key update st0
+let main () = ()
+   
 
 
 
