@@ -27,8 +27,6 @@ type maze (w, h) as this =
     
     let mazestruc = Array2D.create w h false
 
-    let element (x, y) = Array2D.get mazestruc x y 
-
     let removeWall (x1, y1) (x2, y2)=
         let Xcellwall = (min x1 x2) + 1
         let Ycellwall = (min y1 y2) + 1
@@ -40,30 +38,56 @@ type maze (w, h) as this =
 
     let isValidCell (x,y) = x>=1 && x<=(w-1) && y>=1 && y<=(h-1)
 
-    let generateMaze =
-        mazestruc.[1 , 1] <- true
-        let rec loop m =
-                let mutable X = 1
-                let mutable Y = 1
-                let dir = rndDir [Up ; Right ; Down ; Left]
-                match dir with 
-                |Up when isValidCell (X , Y - 2) -> mazestruc.[X , Y-2] <- true
-                                                    removeWall (X,Y) (X,Y-2)
-                |Right when isValidCell (X + 2 , Y) -> mazestruc.[X+2 , Y] <- true
-                                                       removeWall (X,Y) (X,Y-2)
-                |Down when isValidCell (X , Y + 2) -> mazestruc.[X , Y+2] <- true
-                                                      removeWall (X,Y) (X,Y-2)
-                |Left when isValidCell (X - 2 , Y) -> mazestruc.[X-2 , Y] <- true
-                                                      removeWall (X,Y) (X,Y-2)
-                |_ -> if isValidCell (X , Y - 2) || isValidCell (X + 2 , Y) || isValidCell (X , Y + 2) || isValidCell (X - 2 , Y) then loop m
-                      else
-    
-
     // TODO: do not forget to call the generation function in your object initializer
     do this.generate
 
     // TODO: start with implementing the generation
-    member private __.generate = ()
+    member private __.generate = 
+        let generateMaze =
+            mazestruc.[1 , 1] <- true
+            let rec loop m =
+                    let mutable X = 1
+                    let mutable Y = 1
+                    let mutable move = []
+                    let dir = rndDir [Up ; Right ; Down ; Left]
+                    match dir with 
+                    |Up when isValidCell (X , Y - 2) -> mazestruc.[X , Y-2] <- true
+                                                        removeWall (X,Y) (X,Y-2)
+                                                        Y <- (Y-2)
+                                                        move <- Up :: move
+                                                        loop mazestruc
+                    |Right when isValidCell (X + 2 , Y) -> mazestruc.[X+2 , Y] <- true
+                                                           removeWall (X,Y) (X+2,Y)
+                                                           X <- (X+2)
+                                                           move <- Right :: move
+                                                           loop mazestruc
+                    |Down when isValidCell (X , Y + 2) -> mazestruc.[X , Y+2] <- true
+                                                          removeWall (X,Y) (X,Y+2)
+                                                          Y <- (Y+2)
+                                                          move <- Down :: move
+                                                          loop mazestruc
+                    |Left when isValidCell (X - 2 , Y) -> mazestruc.[X-2 , Y] <- true
+                                                          removeWall (X,Y) (X-2,Y)
+                                                          X <- (X-2)
+                                                          move <- Left :: move
+                                                          loop mazestruc
+                    |_ -> if isValidCell (X , Y - 2) || isValidCell (X + 2 , Y) || isValidCell (X , Y + 2) || isValidCell (X - 2 , Y) then loop m
+                          else match List.head move with
+                               |Up -> Y <- (Y+2)
+                                      move <- List.tail move
+                                      loop mazestruc
+                               |Right -> X <- (X-2)
+                                         move <- List.tail move
+                                         loop mazestruc
+                               |Down -> Y <- (Y-2)
+                                        move <- List.tail move
+                                        loop mazestruc
+                               |Left ->  X <- (X+2)
+                                         move <- List.tail move
+                                         loop mazestruc
+                               |_ ->  ()   
+            loop mazestruc
+        generateMaze   
         
 
 let main () = ()
