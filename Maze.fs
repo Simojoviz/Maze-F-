@@ -72,20 +72,20 @@ type maze (w, h) as this =
                                                           move <- Left :: move
                                                           loop mazestruc
                     |_ -> if isValidCell (X , Y - 2) || isValidCell (X + 2 , Y) || isValidCell (X , Y + 2) || isValidCell (X - 2 , Y) then loop m
-                          else match List.head move with
-                               |Up -> Y <- (Y+2)
-                                      move <- List.tail move
-                                      loop mazestruc
-                               |Right -> X <- (X-2)
-                                         move <- List.tail move
-                                         loop mazestruc
-                               |Down -> Y <- (Y-2)
-                                        move <- List.tail move
-                                        loop mazestruc
-                               |Left ->  X <- (X+2)
-                                         move <- List.tail move
-                                         loop mazestruc
-                               |_ ->  ()   
+                          else if move = [] then ()                           
+                               else match List.head move with
+                                    |Up -> Y <- (Y+2)
+                                           move <- List.tail move
+                                           loop mazestruc
+                                    |Right -> X <- (X-2)
+                                              move <- List.tail move
+                                              loop mazestruc
+                                    |Down -> Y <- (Y-2)
+                                             move <- List.tail move
+                                             loop mazestruc
+                                    |Left ->  X <- (X+2)
+                                              move <- List.tail move
+                                              loop mazestruc
             loop mazestruc
         generateMaze   
         
